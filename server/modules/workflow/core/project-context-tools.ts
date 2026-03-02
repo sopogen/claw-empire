@@ -409,6 +409,19 @@ export function createProjectContextTools(deps: CreateProjectContextToolsDeps) {
   function ensureClaudeMd(projectPath: string, worktreePath: string): void {
     if (fs.existsSync(path.join(projectPath, "CLAUDE.md"))) return;
 
+    // Also recognise .claude/CLAUDE.md (Claude Code convention)
+    const dotClaudeMd = path.join(projectPath, ".claude", "CLAUDE.md");
+    if (fs.existsSync(dotClaudeMd)) {
+      const dstDir = path.join(worktreePath, ".claude");
+      fs.mkdirSync(dstDir, { recursive: true });
+      try {
+        fs.copyFileSync(dotClaudeMd, path.join(dstDir, "CLAUDE.md"));
+      } catch (err) {
+        console.warn(`[Claw-Empire] Failed to copy .claude/CLAUDE.md to worktree: ${err}`);
+      }
+      return;
+    }
+
     const climpireDir = path.join(projectPath, ".climpire");
     const claudeMdSrc = path.join(climpireDir, "CLAUDE.md");
     const claudeMdDst = path.join(worktreePath, "CLAUDE.md");
